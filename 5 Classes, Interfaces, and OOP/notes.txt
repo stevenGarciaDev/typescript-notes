@@ -1,0 +1,836 @@
+Introduction
+
+What is Object-Oriented Programming
+
+Creating Classes
+
+Creating Objects
+
+Read-only and Optional Properties
+
+Access Control Keywords
+
+Parameter Properties
+
+Getters and Setters
+
+Index Signatures
+
+Static Members
+
+Inheritance
+
+Method Overriding
+
+Polymorphism
+
+Private vs Protected Members
+
+Abstract Classes and Methods
+
+Interfaces
+
+Interfaces vs Types
+
+Summary
+
+Exercises
+
+/* ------------
+
+Introduction
+
+What is Object-Oriented Programming
+
+    one of the many programming paradigms or styles of programming
+
+    Programming paradigms
+
+        * Procedural
+        * Functional
+        * Object-Oriented
+        * Event-driven
+        * Aspect-oriented
+        * etc.
+
+    These are ways of writing code. // a way to implement 
+
+    In OOP, 
+    objects are the building blocks of the application
+
+    A real app consist of hundreds or thousands of objects working together to solve problems.
+
+    Object is a unit that contains some state and behavior. 
+    // data and operations
+
+    Person object 
+        - name, email, (properties are the state)
+        
+        - talk, code, (methods)
+
+    each object is responsible for a single task
+
+    Object-Oriented programming is often compared with functional programmig.
+
+    Which is a completely different style of programming.
+
+    Don't try to solve every problem with a paradigm 
+
+    every paradigm has strengths and weaknesses
+    
+    // check out design patterns course
+
+Creating Classes
+
+    To create an object, must first create a class
+
+    A class is a blueprint for creating objects.
+
+    It is like an object factory.
+
+    Bank Account class 
+
+
+    Account
+        id, owner balance
+
+        deposit(), withdraw()
+
+
+
+    "use strict";
+
+    class Account {
+        id: number;
+        owner: string;
+        balance: number;
+
+        // a constructor is a special function for a special method, new 
+        // when initializing an object
+        // it returns an instance of an Account, implicitly
+        constructor(id: number, owner: string, balance: number) {
+            this.id = id;
+            this.owner = owner;
+            this.balance = balance;
+        }
+
+        // methods
+
+        deposit(amount: number): void {
+            if (amount <= 0)
+                throw new Error('Invalid amount');
+            this.balance += amount;
+        }
+
+        withdraw(amount: number): number {
+            if (this.balance - amount < 0) 
+                throw new Error('Invalid withdraw amount');
+            this.balance -= amount;
+            return amount;
+        }
+    }
+
+
+    in JavaScript, don't have the properties or type annotations 
+
+    only the constructor 
+
+    the declaration of the properties are for TypeScript
+
+Creating Objects
+
+        "use strict";
+
+        class Account {
+            id: number;
+            owner: string;
+            balance: number;
+
+            constructor(id: number, owner: string, balance: number) {
+                this.id = id;
+                this.owner = owner;
+                this.balance = balance;
+            }
+
+            deposit(amount: number): void {
+                if (amount <= 0)
+                    throw new Error('Invalid amount');
+                this.balance += amount;
+            }
+        }
+
+    let account = new Account(1, "Steven", 25_000);
+
+    // blue icon are properties 
+    // purple icon are methods 
+
+    account.deposit(100);
+    console.log(account);
+
+    $ tsc 
+    $ node dist/index.js
+
+    $ tsc && node dist/index.js
+
+
+    the typeof operator returns object
+
+    to check the type of an object and see if it is an instance of a given class,
+    use the instanceof operator 
+
+    // returns a boolean value
+    console.log(account instance Account);
+
+Read-only and Optional Properties
+
+    In TypeScript, we have modifiers that we can apply to our properties to help us write more robust code.
+
+    Let's say that the id of a bank account should never change.
+
+    class Account {
+        readonly id: number;
+        owner: string;
+        balance: number;
+
+        // this property is optional
+        nickname?: string;
+
+         constructor(id: number, owner: string, balance: number) {
+            this.id = id;
+            this.owner = owner;
+            this.balance = balance;
+        }
+    }
+
+Access Control Keywords
+
+    In TypeScript, we have other modifiers for controller access to properties and methods.
+
+    We use these properties to write more robust code.
+
+    now need a new property to
+    record the transactions, 
+    which will be an array of transaction objects
+
+    but before updating the balance,
+    record a transaction 
+
+
+    the problem with this implementation is that once we have an account object,
+    we can directly update the balance 
+
+    such as 
+
+    account.balance -= 1;
+    // this is bad as we don't have a record of the transaction
+
+    // this is where we can use access modifiers
+    // to solve this problem
+
+    In TypeScript
+
+    we have 3 access modifiers
+
+        * public
+
+        * private 
+
+        * protected
+
+
+    when we declare properties, all of these properties are public by default
+
+    class Account {
+        readonly id: number;
+        owner: string;
+        private _balance: number;
+
+        // this property is optional
+        nickname?: string;
+
+         constructor(id: number, owner: string, balance: number) {
+            this.id = id;
+            this.owner = owner;
+            this.balance = balance;
+        }
+
+        deposit(amount: number): void {
+            ...
+        }
+
+        private calculateTax() {
+            ...
+        }
+
+        getBalance(): number {
+            return this._balance;
+        }
+    }
+
+
+
+    only use private properties for writing robust code 
+    as it enforces some rules in our code
+
+    by convention, prefix these private properties with an underscore
+
+    access modifers can also be applied to methods
+
+
+Parameter Properties
+
+    A cool feature of TypeScript that helps you write more concise code.
+
+    Notice the constructor has 3 parameters and 3 lines of code for initializing 
+    the related properties
+
+    so notice the need to write the parameters, the properties, the initialization code 
+    in the constructor, and the declaration 
+
+    repetitive
+
+    prefix the parameters of the constructor with an access modifier 
+    and this tells the compiler to create a property with this name 
+    and initialize it in one go
+
+
+
+    instead of 
+
+        constructor(id: number, owner: string, balance: number) {
+            this.id = id;
+            this.owner = owner;
+            this.balance = balance;
+        }
+
+    can do 
+
+        // and remove the declaration of the properties
+
+        constructor(
+            public readonly id: number,
+            public owner: string,
+            private _balance: number) {
+        } 
+
+Getters and Setters
+
+    rather than account.getBalance()
+    can do account.balance
+    with the use of TypeScript getters and setters
+
+    // getter for getting the value of a property
+    get balance(): number {
+        return this._balance;
+    }
+
+    set balance(value: number) {
+        if (value < 0)
+            throw new Error('Invalid value');
+        this._balance = value;
+    }
+
+    --
+
+    with this syntax, we can work with this property just like before on the outside
+    and we still have validation in the setter
+
+Index Signatures
+
+    in JavaScript we can create an object and add properties to it 
+    dynamically, 
+    but not possible in TypeScript since TypeScript 
+    is very strict about the shape of objects 
+
+        in JavaScript
+
+        let person = {};
+        person.name = 'Steven';
+
+    There are situations though when we need to add properties to an object dynamically.
+
+    This is where we use index signatures.
+
+
+    Ticketing application for concerts 
+    and want to know who is sitting where 
+
+    class SeatAssignment {
+        // A1, A2, ...
+        // Mosh, Steven, ....
+
+        // use index signatures for creating properties dynamically
+
+        // so below is an Index signature property
+
+        [seatNumber: string]: string;
+    }
+
+
+    let seats = new SeatAssignment();
+
+    seats.A1 = 'Steven';
+    seats.A2 = 'T';
+
+    could also use []
+
+    seats['A3'] = 'b';
+
+
+    SO with Index signatures, TypeScript can get dynamic properties 
+    but we also get type checking/type safety
+
+Static Members
+
+    so if building a ride sharing application
+
+    by marking the property as static, 
+    it is then shared amongst all instances of the Ride class
+
+    static property is a property that belongs to a class, not an object 
+
+    so only one instance of that property in memory
+
+
+
+    class Ride {
+        // passenger
+        // pickupLocation
+        // dropOffLocation
+
+        private static _activeRides: number = 0;
+
+        start() {
+            this.activeRides++;
+        }
+
+        stop() { 
+            if (this.activeRides > 0)
+                this.activeRides--;
+        }
+
+        static get activeRides() {
+            return Ride._activeRides;
+        }
+    }
+
+
+    let ride1 = new Ride();
+    ride1.start();
+
+    let ride2 = new Ride();
+    ride2.start();
+
+
+    console.log(ride1.activeRides);
+    console.log(ride2.activeRides);
+
+Inheritance
+
+    Sometimes we deal with classes that have common functionality,
+
+    such as Student and Teacher
+    can have common properties and methods 
+
+    we don't want to duplicate 
+
+    better to write it once and use it in many different places 
+
+    this is where we use inheritance
+
+    Inheritance is a mechanism that allows you to reuse your code.
+
+    Base class,
+    then multiple derived classes
+
+    -
+
+    class Person {
+        constructor(public firstName: string, public lastName: string) {}
+
+        get fullName() {
+            return `${this.firstName} ${this.lastName}`;
+        }
+
+        walk() {
+
+        }
+    }
+
+    -
+    // remove the public modifier in the derived class 
+    // for the constructor parameters,
+    // as in the base class, it has already created that property 
+
+    class Student extends Person {
+
+        constructor(
+            public studentId: number,
+            firstName: string,
+            lastName: string) {
+
+            // in TypeScript, we have a special keyword called, super
+            // to reference the base class, super() is to call the constructor of the base class
+
+            super(firstName, lastName);
+        }
+
+        takeTest() {
+
+        }
+    }
+
+    ---
+
+    let student = new Student(1, 'John', 'john@gmail.com');
+    student.walk();
+    student.takeTest();
+
+Method Overriding
+
+    inheritance is great but sometimes in a derived class, you want to change 
+    the implementation of a base class's method
+
+    such as the full name getter,
+    lets say for a teacher class, you want to prefix with Professor,
+
+    this is called method overriding
+
+    --
+
+    class Teacher extends Person {
+        // no explicit constructor 
+        // means that the Teacher class will inherit 
+        // the Person class's constructor
+
+        // the override keyword tells the TypeScript compiler 
+        // that we are overriding or changing the implementation 
+        // of this method
+
+        // note that we can still achieve this without explicitly 
+        // writing the override keyword
+        // the problem is that if we don't explicitly supply the override keyword 
+        // then it is disconnected from the one defined in the the base class 
+    
+        // as a best practice, 
+        // enable a special compiler option that will remind you to 
+        // use the override keyword 
+        
+        override get fullName() {
+            return `Professor ${super.fullName}`;
+        }
+    }
+
+    let teacher = new Teacher('John', 'Smith');
+    console.log(teacher.fullName);
+
+    $ tsc && node dist/index.js
+
+
+
+    tsconfig.json 
+
+        in the Type Checking section
+
+
+        "noImplicitOverride": true
+
+
+    so the benefit of having this TypeScript compiler option on, 
+    is that 
+    if the base class were to modify the name or implementation 
+    of the method that is being overridden in a base class 
+
+    then that would break the polymorphic behavior
+
+Polymorphism
+
+    A powerful technique built on top of method overriding.
+
+    One of the core principles of object-oriented programming  
+    is Polymorphism.
+
+    Poly means many 
+
+    morph means form 
+
+    Polymorphism => "many forms"
+
+    This refers to the situation where an object can take many different forms.
+
+     class Teacher extends Person {  
+        override get fullName() {
+            return `Professor ${super.fullName}`;
+        }
+    }
+
+    function printNames(people: Person[]) {
+        for (let person of people)
+            console.log(person.fullName);
+    }
+
+    printNames([
+        new Student(1, 'John', 'Smith'),
+        new Teacher('Mosh', 'Hamedani')
+    ]);
+
+    // and it works,
+    // the implementation is different depending on the instance passed
+
+    this is Polymorphism in action
+
+    so Polymorphism,
+    we specify a base class, or an interface 
+    and this allows any derived classes to be used 
+
+        this makes the code reusable, reduces duplication, and enables 
+        further modularity in the future 
+
+    Polymorphism, 
+    it takes a different form
+
+
+    can create a new class in the future that inherits from the base class 
+    or implements an interface 
+    and it can use that existing method without it requiring any modification/update
+
+
+    we can enhance our program 
+
+    Another principle of Object-Oriented Programming called 
+
+    Open Closed Principle
+
+        Classes should be open for extension and closed for modification.
+
+    Because if you modify or change a class, then it can potentially break something 
+    and you end up with a bug.
+
+    if you properly test the class and know it is working, 
+    then you can confidently enhance your application 
+    simply by adding 
+
+    we write new code instead of changing existing code
+
+    practically speaking, 
+    we can't adhere to this principle 100% of the time 
+
+    it is impossible and costly
+
+    this is just a guiding principle
+
+    Polymorphism allows you to follow this guideline
+
+        -> go through Mosh's design patterns course 
+        to learn in more detail
+
+Private vs Protected Members
+
+    in TypeScript, we have protected members
+
+    in the Person class,
+
+        if you for example, make the walk method private
+
+        private walk() {
+            //
+        }
+
+    protected members are the same in that they are not accessible 
+    outside (in an instance of that class)
+
+    but you can access them anywhere in the class or in any derived classes
+    // so derived classes inherit protected members 
+    // but derived classes don't inherit private members
+
+    the protected access modifier is not something that you should use that often
+    unless you know what you are doing
+
+    because they can create coupling in your applications
+
+    so just stick to public and private
+    unless you really know what you are doing
+
+Abstract Classes and Methods
+
+    Lets say building an application that allows the user 
+    to draw something on a canvas.
+
+        Circle, Rectangle, Triangle
+
+        so these are all shapes with some common properties,
+         Shape
+
+
+    // so this base class, cannot render since it is an abstract class,
+    // and we don't want to be able to instantiate it
+        // think, what does it mean to render a shape?
+
+        so mark as abstract, and now can't instantiate with the new keyword,
+
+        we are telling the TypeScript compiler that the class is abstract,
+        another class has to extend it
+
+        an abstract class is like an uncooked meal 
+
+        often have abstract methods in abstract classes,
+        these are methods that have no implementation,
+        they exist to serve as an interface/constract for Polymorphism
+
+        abstract methods can only exist within abstract classes
+
+    abstract class Shape {
+        constructor(public color: string) {}
+
+        abstract render(): void;
+    }
+
+    -
+
+    class Circle extends Shape {
+        constructor(public radius: number, color: string) {
+            super(color);
+        }
+
+        override render() {
+            console.log('Rendering a circle');
+        }
+    }
+
+Interfaces
+
+    Classes 
+        -> blueprints for creating objects
+
+    In Object Oriented Programming we have another building block called interfaces.
+
+    Interfaces
+        -> to define the shape of objects
+
+        it's a constract made with the compiler,
+
+        and other classes can implement that interface,
+
+        the benefit is that it can then make use of Polymorphism
+
+
+
+    ex: 
+        Calenders 
+
+        Google
+        iCal
+        Outlook
+
+    they all have commonalities
+
+
+        // their specific implementation
+        // depends on what type of calendar they are
+        (what app they are)
+
+    so declare as abstract
+
+    abstract class Calendar {
+        constructor(public name: string) {}
+
+        abstract addEvent(): void;
+
+        abstract removeEvent(): void;
+    }
+
+
+    $ tsc 
+
+    then in index.js
+
+        the abstract keyword has no representation in JavaScript,
+        it is purely a TypeScript concept
+
+    --
+
+    so consider an interface to define the shape of an object
+
+        interface Calendar {
+            name: string;
+            addEvent: () => void;
+            removeEvent: () => void;
+        }
+
+
+    now can create concrete implementations
+    that implement this interface
+
+    in JavaScript, we don't have interfaces,
+
+    so they are purely used by the TypeScript compiler for type checking
+
+    should you use an abstract class or an interface?
+
+        -> that depends
+
+        in this example, a calendar interace is not supplying 
+        any logic or algorithm that subclasses can reuse 
+
+        just method declarations 
+
+        so it is better to use an interface because 
+        our code will end up more concise and shorter
+
+        both in TypeScript and JavaScript
+
+    in constrast
+
+        in there was some logic provided,
+        a method with some lines of code 
+
+        and you wanted to share that code amongst 
+        subclasses,
+        then couldn't use an interface 
+
+        as interfaces cannot have implementations
+
+        only method declarations, just specify the signature of the methods
+
+    note that interfaces can use inheritance
+
+    // inherits all the members
+
+    interface CloudCalendar extends Calendar {
+        sync(): void;
+    }
+
+    -
+    then implement that interface
+
+        ctrl + .
+        // then tab
+
+
+    class GoogleCalendar implements Calendar {
+        constructor(public name: string) {}
+
+        addEvent(): void {
+
+        }
+
+        removeEvent(): void {
+
+        }
+    }
+
+    so using an interface, you can describe the shape of an object
+
+Interfaces vs Types
+
+    // refer to pdf 
+
+    Note that a class can implement an interface or a type interface 
+
+    class MyCalendar extends MyInterface {}
+
+    class MyCalendar extends MyType {}
+
+Summary
+
+Exercises

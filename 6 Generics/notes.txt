@@ -1,0 +1,426 @@
+Introduction
+
+Understanding the Problem
+
+Generic Classes
+
+Generic Functions
+
+Generic Interfaces
+
+Generic Constraints
+
+Extending Generic Classes
+
+The keyof Operator
+
+The Type Mapping
+
+Summary
+
+Exercises
+
+/* --------
+
+Introduction
+
+    Generic and reusable types.
+
+    - Generic classes, functions, interfaces, constraints, and type mapping 
+
+    type mapping is a powerful technique for transforming types
+
+Understanding the Problem
+
+    index.ts
+
+    The problem generics try to solve,
+
+    consider a key value pair.
+
+        class KeyValuePair {
+            constructor(public key: number, public value: string) {}
+        }
+
+        // now create an object 
+
+        let pair = new KeyValuePair(1, 'Apple');
+
+        // so let's say somewhere else you wanted to use a string value for the key,
+        // current implementation requires a number 
+
+            so we have three possible solutions 
+
+            use the any data type 
+                (bad as loose type safety and loose intelisense)
+
+            or create a new class called StringValuePair where the data type is a string
+            
+            or use a union, such as number | string
+
+    need a generic as to get a common and reusable solution 
+
+Generic Classes
+
+    // can define 1 or more generic type parameters
+    // T is a common convention and it comes from C++ 
+    // where it is referred to as template classes
+
+    class KeyValuePair<T> {
+        constructor(public key: T, public value: string) {}
+    }
+
+    let pair = new KeyValuePair<number>(1, 'hello');
+
+    let otherPair = new KeyValuePair<string>('test', 'abc');
+
+    -
+
+    or could make both parameters generic,
+
+    class KeyValuePair<K, V> {
+        constructor(public key: K, public value: V) {}
+    }
+
+      let pair = new KeyValuePair<number, string>(1, 'hello');
+
+    let otherPair = new KeyValuePair<string, boolean>('test', false);
+
+
+    -
+    note that if you don't explicitly supply the types, then the compiler 
+    can infer the type based on the values passed
+
+    but it is best if you explicitly specify
+
+Generic Functions
+
+    We can also create generic functions or methods.
+
+
+    function wrapInArray(value: number) {
+        return [value];
+    }
+
+    let numbers = wrapInArray('1');
+
+    // can instead use generics to make that function reusable
+
+    function wrapInArray<T>(value: T) {
+        return [value];
+    }
+
+
+    // so returns a string array here 
+    let strArray = wrapInArray('test');
+
+    // returns a number array
+    let numbers = wrapInArray(1);
+
+
+    class ArrayUtils {
+        wrapInArray<t>(value: T) {
+            return [value];
+        }
+    }
+
+    let utils = new ArrayUtils();
+    let numbers = utils.wrapInArray();
+
+    -----
+
+    class ArrayUtils {
+        static wrapInArray<t>(value: T) {
+            return [value];
+        }
+    }
+
+    let numbers = ArrayUtils.wrapInArray();
+
+Generic Interfaces
+
+    consider the endpoints
+
+        https://mywebsite.com/users
+        https://mywebsite.com/products
+
+    interface Result<T> {
+        data: T | null;
+        error: string | null;
+    }
+
+    function fetch<T>(url: string): Result<T> {
+        return { data: null, error: null };
+    }
+
+    interface User {
+        username: string;
+    }
+
+    interface Product {
+        title: string;
+    }
+
+    let result = fetch<User>('url');
+    console.log( result.data.username );
+
+Generic Constraints
+
+    sometimes we need to constrain generic type arguments
+
+    function echo<T>(value: T): T {
+        return value;
+    }
+
+    echo('test');
+
+    -
+
+    but what if you want to constrain or limit the type of objects that we can pass?
+
+    -
+
+    so after the generic type parameter
+
+        function echo<T extends number | string>(value: T): T {
+            return value;
+        }
+
+    could also constrain by the shape of an object
+    
+        function echo<T extends { name: string }>(value: T): T {
+            return value;
+        }
+
+        echo({ name: 'Steven' });
+
+    could also constrain by an interface
+
+        interface Person {
+            name: string;
+        }
+
+        function echo<T extends Person>(value: T) {
+            return value;
+        }
+
+
+    could also constrain by class (or any class that derives from that class)
+
+        class Person {
+            constructor(public name: string) {}
+        }
+
+        class Customer extends Person {
+
+        }
+
+        function echo<T extends Person>(value: T) {
+            return value;
+        }
+
+        echo(new Person('Steven'));
+        echo(new Customer('Steven'));
+
+Extending Generic Classes
+
+    consider building an ecommerce application
+
+    interface Product {
+        name: string;
+        price: number;
+    }
+
+    class Store<T> {
+        protected _objects: T[] = [];
+
+        add(obj: T): void {
+            this._objects.push(obj);
+        }
+    }
+
+    let store = new Store<Product>();
+    
+
+    --
+
+    so now to extend this class
+
+    // the compiler doesn't know what T is
+
+    class CompressibleStore extends Store<T> {
+
+    }
+
+    // so need to do pass on the generic type parameter
+
+    class CompressibleStore<T> extends Store<T> {
+        compress() {}
+    }
+
+    let store = new CompressibleStore<Product>();
+    store.compress();
+
+    --
+
+    // Restrict the generic type parameter.
+    class SearchableStore<T extends { name: string }> extends Store<T> {
+        find(name: string): T | undefined {
+            return this._objects.find(obj => obj.name === name);
+        }
+    }
+
+    --
+
+    lets say there are certain operations that can only be performed on products
+
+    // dealing with a very specific store
+
+    // Fix the generic type parameter
+    class ProductStore extends Store<Product> {
+        filterByCategory(category: string): Product[] {
+            return [];
+        }
+    }
+
+    takeaway
+
+        when extending a generic class,
+        you have three options
+
+        - fix the generic type parameter by explicitly defining the generic type
+        - restrict it by applying a constraint
+        - or can simply pass it on to the child class
+
+The keyof Operator
+
+    interface Product {
+        name: string;
+        price: number;
+    }
+
+    class Store<T> {
+        protected _objects: T[] = [];
+
+        add(obj: T): void {
+            this._objects.push(obj);
+        }
+
+        // the any data type is bad practice
+        find(property: string, value: unknown): T | undefined {
+            return this._objects.find(obj => obj[property] === value);
+        }
+    }
+
+    let store = new Store<Product>();
+    store.add({ name: 'a', price: 1 });
+    store.find('name', 'a');
+    store.find('price', '1');
+
+    // this would cause program to crash since no property exists with that name
+    // this is where you would use the keyof operator
+    store.find('nonExistingProperty', '1');
+
+     class Store<T> {
+        protected _objects: T[] = [];
+
+        add(obj: T): void {
+            this._objects.push(obj);
+        }
+
+        // no index signature with a parameter of type 'string' was found on type 'unknown'
+        // since using square bracket syntax,
+
+        // we use index signatures for dynamically adding properties to an object
+
+        // so tell the compiler, not using an index signature, we are working with actual properties of type T
+
+        // so keyof says that it must be a property of T (a union)
+        // keyof T => 'name' | 'price'
+
+        find(property: keyof T, value: unknown): T | undefined {
+            return this._objects.find(obj => obj[property] === value);
+        }
+    }
+
+The Type Mapping
+
+    Sometimes we need to base a type of another type.
+
+    This is called type mapping.
+
+    interface Product {
+        name: string;
+        price: number;
+    }
+
+    what if somewhere else in our application, we need a product with readonly properties?
+
+    one option is to duplicate this interface, call it ReadOnlyProduct
+    and then make each property readony
+
+    but this is very repetitive,
+    and also every time we add a new property in the Product interface,
+    we have to remember to add that property to ReadOnlyProduct
+
+    a better way,
+
+    use type mapping
+
+    so create a new type based on an existing type
+
+    type ReadOnlyProduct = {
+        // Index signature
+        // keyof operator
+
+        // dynamically add properties and use keyof to dynamically get the properties of the product type
+        // [Property in keyof Product]: Product[Property];
+
+        readonly [K in keyof Product]: Product[K];
+    }
+
+    let product: ReadOnlyProduct = {
+        name: 'a',
+        price: 1
+    };
+
+    -
+
+    so could also make it a generic type
+
+    type ReadOnly<T> = {
+        readonly [K in keyof T]: T[K];
+    }
+
+    -
+
+    so could use the same technique to create a product type with optional properties
+
+    type Optional<T> = {
+        [K in keyof T]?: T[K];
+    }
+
+    type Nullable<T> = {
+        [K in keyof T]?: T[K] | null;
+    }
+
+    these types are actually built into TypeScript,
+
+    google: typescript utility types
+
+        and you can see all the utility types that are available to you
+
+        Partial<Type>
+            is like our optional, we can make all properties optional
+
+        Required<Type>
+
+        Readonly<Type>
+
+        etc.
+
+    just refer to the documentation
+
+Summary
+
+Exercises

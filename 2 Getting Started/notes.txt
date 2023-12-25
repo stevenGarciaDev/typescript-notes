@@ -1,0 +1,321 @@
+Introduction
+
+What is TypeScript
+
+Setting up the dev environment
+
+Your first TypeScript program
+
+Configuring the TypeScript compiler
+
+Debugging TypeScript Applications
+
+summary
+
+/* ---------
+
+Introduction
+
+What is TypeScript
+
+    TypeScript is a superset of JavaScript.
+
+    It is a programming language to address 
+    the shortcomings of JavaScript.
+    // created by Microsoft
+
+    TypeScript is built on top of JavaScript,
+    so every JavaScript file is a valid TypeScript file.
+
+    But TypeScript adds some really useful features
+
+        Benefits:
+
+            * static typing (most important)
+            * code completion
+            * refactoring
+            * shorthand notations
+
+        Static Typing is the most imporant feature.
+
+        We have 2 types of programming languages
+
+        Statically-Typed                        Dynamically-Typed
+
+        C++, C#, Java, etc.                     JavaScript, Python, Ruby
+
+        the type of variables                   the type of variables is dynamic
+        are defined at compile-time             so it is determined at runtime
+        or while coding                         and it can change
+
+    -
+    Dynamically-Typed leads to flexibility
+    but it can lead to problems.
+    What if you pass that variable to a function that expects 
+    a particular data type, then app might crash or act correctly.
+
+    The problem is you won't experience this issue until you run your application
+    or unit tests.
+
+    You have to test all the edge cases to catch these bugs.
+
+    This is the problem that TypeScript tries to solve.
+
+        TypeScript is essentially
+        JavaScript with Type Checking
+
+        // we explicity set the type of our variables upon declaration 
+        // then we pass our code to the TypeScript compiler 
+        // and the compiler will tell us if we are doing something wrong.
+
+    So we can catch a lot of our mistakes at compile-time.
+
+
+    let x: number = 10;
+
+    TypeScript is more than just Type Checking,
+    most code editors have great support for TypeScript
+    so they can detect the type and offer code completion 
+    and refactoring.
+
+    TypeScript includes additional features to help you write cleaner and more concise code.
+
+    Overtime, these features get added to JavaScript but because we have various 
+    browsers and runtime environments for executing JavaScript code.
+
+    It takes some time for these features to be implemented in various browsers.
+
+    So by coding in TypeScript, you can use the features of future JavaScript.
+
+    Drawbacks
+
+        * Compilation 
+            // compilation step 
+
+            as browsers don't understand TypeScript at the time of this course
+
+            we give our .ts file to the compiler to compile/translate into .js 
+            // the process is called transpilation
+
+        * Discipline in coding
+
+            TypeScript gets in the way,
+            but if you are working on a large project with multiple developers
+            then you would end up with bad bugs in vanilla JavaScript.
+
+            TypeScript 
+                -> medium to large projects
+
+            JavaScript
+                -> simple projects
+
+Setting up the dev environment
+
+    download node from nodejs.org/en/
+
+    Use node package manager to install the TypeScript compiler
+
+    $ node -v
+
+    $ sudo npm i -g typescript
+
+        // install globally
+
+    $ tsc -v
+
+        tsc is short for TypeScript compiler
+
+Your first TypeScript program
+
+    $ mkdir hello-world
+
+    $ cd hello-world
+
+    $ code .
+
+        index.ts
+
+            console.log('Hello World');
+
+    $ tsc index.ts
+
+        Compile/transpile the file into a .js file
+
+    $ node index.js
+
+        let age: number = 20;
+
+        // can't set the variable, age, to a different data type
+        // static typing
+
+        The TypeScript compiler uses an older version of JavaScript called ES5. (ECMAScript 5)
+        which is specification. JavaScript is an implementation of the specification.
+
+Configuring the TypeScript compiler
+
+    To target to use/compile to a more modern version of JavaScript.
+
+    Creating a config file 
+
+    $ tsc --init
+
+        This creates a configuration file 
+
+        tsconfig.json
+
+
+        it displays a number of settings
+
+        most are commented out by default and you'll just start with a handful of them 
+
+        "target": "es2016"
+
+    You could use a higher target, which often results in shorter and less concise code.
+
+        "target": "ES2016"
+            // ctrl + space 
+
+            ES2016 is the safest for all browsers 
+
+        "module": "commonjs"
+
+        "rootDir": "./"
+
+            which specifies the directory that contains source files
+
+            ./ is the current folder,
+
+            not that by convention we often put our source code 
+            into a separate folder
+
+        src/index.ts
+
+    "rootDir": "./src"
+
+    similar setting under the Emit section
+
+    "outDir": "./"
+
+        This specifies the directory that will contain our JavaScript files.
+
+    "outDir": "./dist"
+
+        Our JavaScript files will be stored in dist/
+
+
+    Another useful setting
+
+    "removeComments": true
+
+        TypeScript compiler will remove all the comments in our TypeScript code so that the 
+        generated JavaScript code will be shorter.
+
+        Another useful setting is 
+
+        "noEmitOnError": true 
+
+            this would stop generating JavaScript if there are any errors identified by the TypeScript
+            compiler
+
+
+
+    $ tsc 
+
+        // Running tsc without any arguments
+        // will compile all TypeScript files in this project
+
+Debugging TypeScript Applications
+
+    Very useful when things go wrong, can run it line by line and see what happens under the hood.
+
+    tsconfig.json
+
+        enable 
+
+        "sourceMap": true
+
+
+        So source map is a file that specifies how each line in our TypeScript code 
+        maps to the generated JavaScript code.
+
+    $ tsc
+
+        view in dist/index.js.map 
+
+            that file is your source map
+
+            This is for debuggers to understand.
+
+    index.ts
+
+        if (age < 50)
+            age += 10;
+
+        click on side to make a breakpoint
+
+    click on the debug panel in VSCode
+
+    click on create a launch.json file
+
+    select
+    Node.js
+
+    this creates a new file called launch.json
+
+        This is a JSON file with some configuration
+        that tells VSCode how to debug this application.
+
+
+
+        "type": "pwa-node"
+
+            Going to use Node to launch the program and have a label 
+
+        "name": "Launch Program"
+
+    "program": "${workspaceFolder}/src/index.ts"
+    "outFiles": [
+        "$workspaceFolder}/**/*.js"
+    ]
+
+
+    Add 1 more setting 
+
+        "preLaunchTask": "tsc: build - tsconfig.json"
+
+            All the spaces matter,
+            with this setting we are telling VSCode to use 
+            the TypeScript compiler to build our application 
+            using the tsconfig file.
+
+    f5 to start debugging
+
+
+        so note the debug tools
+
+            step over
+                for executing 1 line
+
+            step into
+                for stepping into a function
+
+            step out
+                for stepping outside of a function
+
+            restart 
+
+            stop
+
+        there are also keyboard shortcuts
+
+    on the left side 
+
+    under variables,
+
+        You can see all the variables that are detected in this debugging session.
+
+    watch 
+
+        can insert a watch, +
+
+summary

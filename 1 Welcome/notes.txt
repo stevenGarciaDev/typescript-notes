@@ -1,0 +1,27 @@
+Welcome
+
+Prerequisites
+
+How to take this course
+
+Learning paths
+
+/* ------
+
+Welcome
+
+    Use TypeScript to build large-scale applications.
+
+Prerequisites
+
+    JavaScript
+    
+How to take this course
+
+    watch all lessons from A to Z
+
+    take notes
+
+    complete all the exercises
+
+Learning paths

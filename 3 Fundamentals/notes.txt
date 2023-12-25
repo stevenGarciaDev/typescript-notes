@@ -1,0 +1,363 @@
+Introduction
+
+Built-in Types
+
+The any Type
+
+Strict compiler option
+
+Arrays
+
+Tuples
+
+Enums
+
+Functions
+
+Objects
+
+Summary
+
+Exercises
+
+/* -----------
+
+Introduction
+
+Built-in Types
+    
+    JavaScript has built in types
+
+        - number
+        - string
+        - boolean
+        - null
+        - undefined
+        - object
+
+        TypeScript
+
+            extends this list and introduces new types
+
+            - any
+            - unknown
+            - never
+            - enum
+            - tuple
+
+    let sales: number = 123456789;
+
+    // we annotate, type assertion for the data type 
+
+    // with TypeScript, you can seperate digits using an underscrore for readability
+    // 123_456_789
+
+    let course: string = 'TypeScript';
+    let isPublished = true;
+
+    // you don't have to always annotate your variable's data type 
+    // since the TypeScript compiler can infer/detect the type based on their value
+
+    let level; // by default type any
+
+The any Type
+
+    in TypeScript there is a type, any
+    which could represent any type of value 
+
+    let level;
+    level = 1;
+    level = 'a';
+
+    // we use TypeScript for type safety, (type checking)
+
+    so avoid using the any type as much as possible
+
+    -
+
+    function render(document) {
+        console.log(document);
+    }
+
+    // the parameter document implicitly has the type, any
+
+    could annotate, to tell TypeScript that you accept and know the type that will be passed
+
+    function render(document: any) {
+        console.log(document);
+    }
+
+    // to avoid having to go through your codebase and annotate with the any data type
+
+    there's a nuclear option for that which is bad practice,
+
+    tsconfig.json
+
+        in the /* Type Checking */ section
+
+        "strict": true
+
+        this turns of some of the basic type checking features
+
+        "noImplicitAny": false
+
+            the compiler won't complain 
+
+            // don't do this though
+
+Strict compiler option
+
+    // view the pdf in the directory
+
+Arrays
+
+    in JavaScript we can declare an array like below 
+
+    let numbers = [1, 2, '3'];
+
+    the thing about JS arrays is that each element can be a different type
+
+    JavaScript arrays are dynamic (dynamic typing)
+
+
+    let numbers: number[] = [1, 2, 3];
+
+    or could just do 
+
+    // the TypeScript compiler can infer
+    let numbers = [1, 2, 3];
+
+
+    let numbers: number[];
+
+    // code completion / intelisense
+
+    numbers.forEach(n => n.)
+        // the editor offers code competion since it knows the type and available properties/methods
+
+Tuples
+    (pronounced tuu ples)
+
+    A fixed length that has a particular type.
+
+    Often use them when working with a pair of values.
+
+    // 1, 'Mosh'
+
+            // the type annotation is a tuple
+
+    let user: [number, string] = [1, 'Mosh'];
+
+    internally tuples are represented as plain JavaScript arrays
+
+
+    user.push(1);
+        // the compiler won't complain,
+        // this is a gap in TypeScript at the time of this recording 
+
+    So a tuple is a fixed length array where each element has a particular type.
+
+    // restrict them to only two values as a best practice
+    // for key value pairs
+
+Enums
+
+    TypeScript has a built in type called Enums which 
+    represent a list of related constants.
+
+    the size of t-shirts 
+
+    const small = 1;
+    const medium = 2;
+    const large = 3;
+
+    Another way is to group these constants inside an enum.
+
+    enum Size { Small, Medium, Large }
+
+    // by default TypeScript assigns the first value of 0
+    // you can explicitly set values to override this default
+
+    enum Size { Small = 1, Medium, Large }
+
+    let mySize: Size = Size.Medium;
+
+    console.log(mySize);
+        
+    $ tsc
+
+    $ node dist/index.js
+
+    it displays the numeric value associated with the Enum member
+
+    The generated JavaScript code,
+
+Functions
+
+    // by default the return type is void 
+    function calculateTax(income: number) {
+
+    }
+
+    // return type is number,
+    // the TypeScript compiler will infer the return value for you
+    function calculateTax(income: number) {
+        return 0;
+    }
+
+    // as a best practice, explicitly define the return type
+    // properly annotate your Functions
+    // especially if building an API for other people to use
+
+
+    // TypeScript will give you a compilation error immediediatly
+    function calculateTax(income: number): number {
+        return '';
+    }
+
+    in tsconfig.json 
+
+        "noUnusedParameters": true,
+
+            have to explicity set this,
+            to ensure that parameters are used 
+
+    // JavaScript by default always returns undefined from our functions if not explicitly returned
+    function calculateTax(income: number): number {
+        if (income < 50_000)
+            return income * 1.2;
+    }
+
+    // another compiler option when forget to return a value 
+    // in tsconfig.json
+
+        "noImplicitReturns": true 
+
+    function calculateTax(income: number): number {
+        if (income < 50_000)
+            return income * 1.2;
+        return income * 1.3;
+    }
+
+     function calculateTax(income: number): number {
+         let x;
+         // note how the local variable x is not being used
+
+        if (income < 50_000)
+            return income * 1.2;
+        return income * 1.3;
+    }
+
+    tsconfig.json
+
+        "noUnusedLocals": true
+
+    
+    function calculateTax(income: number, taxYear: number): number {
+        if (taxYear < 2022)
+            return income * 1.2;
+        return income * 1.3;
+    }
+
+    calculateTax(74_000, 2022);
+
+    note that in JavaScript, you could pass in more arguments than the number of parameters specified
+    JavaScript doesn't care how many arguments you passed to a function,
+    you could pass more or fewer than the number of parameters
+
+    but TypeScript is strict about this
+
+    -
+    But to make a parameter optional
+
+    // to make the parameter option, and supply it with a default
+    function calculateTax(income: number, taxYear?: number = 2022): number {
+        if (taxYear < 2022)
+            return income * 1.2;
+        return income * 1.3;
+    }
+
+
+    // or could do 
+    // (this is bad practice)
+    function calculateTax(income: number, taxYear?: number = 2022): number {
+        if ((taxYear || 2022) < 2022)
+            return income * 1.2;
+        return income * 1.3;
+    }
+
+
+    enable the compiler options in tsconfig.json
+
+        "noUnusedLocals": true,
+        "noUnusedParameters": true,
+        "noImplicitReturns": true
+
+Objects
+
+    let employee = { id: 1 };
+
+    in JavaScript, objects are dynamic.
+
+    So their shape can change throughout the lifetime of the program.
+
+    employee.name = 'Mosh';
+    // this is valid in JavaScript but not in TypeScript
+    // compiler complains
+
+    TypeScript infers the shape of the object.
+
+    We can explicitly define a type annotation 
+
+
+    let employee: {
+        id: number,
+        name: string
+    } = { id: 1, name: 'Steven' };
+
+
+    let employee: {
+        id: number,
+        name?: string
+    } = { id: 1 };
+
+
+    This is bad practice for the example above
+
+    -
+
+    To make certain properties read-only 
+
+
+     let employee: {
+        readonly id: number,
+        name: string
+    } = { id: 1, name: 'Steven' };
+
+
+    // now the TypeScript compiler prevents you from ever modifying that property
+
+
+    to define a method in the object
+    // in the type annotation, specify the signature of the method 
+    // the parameters and the return value
+
+     let employee: {
+        readonly id: number,
+        name: string,
+        retire: (date: Date) => void 
+    } = {
+        id: 1,
+        name: 'Steven',
+        retire: (date: Date) => {
+            console.log(date);
+        }
+    };
+
+
+
+Summary
+
+    // view pdf
+
+Exercises

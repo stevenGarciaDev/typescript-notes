@@ -1,0 +1,549 @@
+Introduction
+
+Type Aliases
+
+Union Type
+
+Intersection Types
+
+Literal Types
+
+Nullable Types
+
+Optional Chaining
+
+The Nullish Coalscing Operator
+
+Type Assertions
+
+The unknown Type
+
+The never Type
+
+Summary
+
+Exercises
+
+/* ----------
+
+Introduction
+
+Type Aliases
+
+    in the previous section, the example was 
+
+    let employee: {
+        readonly id: number,
+        name: string,
+        retire: (date: Date) => void 
+    } = {
+        id: 1,
+        name: 'Steven',
+        retire: (date: Date) => {
+            console.log(date);
+        }
+    };
+
+    There are 3 problems with the implementation.
+
+    If you want to create another employee object, have to repeat the structure/shape 
+    which leads to code duplication.
+
+    Follow the DRY principle. Don't repeat yourself.
+
+    Define a single place to define the shape 
+
+    And make your code easy to understand
+
+    -
+    This is where you would use a type alias.
+
+    Using a type alias, you can define a custom type.
+
+
+        // alt and up arrow, can move lines up
+
+
+        type Employee = {
+            readonly id: number,
+            name: string,
+            retire: (date: Date) => void 
+        }
+
+        // then annotate it with the Employee type
+        let employee: Employee = {
+            id: 1,
+            name: 'Steven',
+            retire: (date: Date) => {
+                console.log(date);
+            }
+        }
+
+Union Type
+
+    With union types you can give a variable or a function parameter more than one type.
+
+    using a vertical bar, you can create a union type
+
+    function kgToLbs(weight: number | string): number {
+        // intelisense would only show the common methods/properties 
+        // shared between the number and string type
+
+        // this is where you would use a technique called narrowing
+        // narrow down the union type into a more specific type
+
+        if (typeof weight === 'number') {
+            // now gives intelisense for a number
+            return weight * 2.2;
+
+        } else {
+            // can see intelisense for a string
+            return parseInt(weight) * 2.2;
+        }
+    }
+
+    kgToLbs(10);
+    kgToLbs('10kg')
+
+    $ tsc
+
+    $ node index.js
+
+        so note that the union type is used for the compiler for type checking,
+        not part of the transpiled JavaScript
+
+Intersection Types
+
+    // so using a union type we can say that a variable or a function parameter can be one of many types
+    let weight: number | string;
+
+    we have another way of defining types called intersection
+
+    instead of |, use & 
+
+    let weight: number & string;
+
+        // now the annotated type represents
+        // and object that is both a number and string at the same type
+        // 'conceptually', note that this above is just an example
+
+    a more realistic example
+
+        // for simplicitly, don't specify the params
+
+    // an object that can be dragged on the string
+    type Draggable = {
+        drag: () => void;
+    }
+
+    type Resizable = {
+        resize: () => void;
+    }
+
+        so using the intersection type, you can combine and make a new type
+
+    // an intersection type
+    type UIWidget = Draggable & Resizable;
+
+    let textBox: UIWidget = {
+        drag: () => {},
+        resize: () => {}
+    }
+
+Literal Types
+
+    sometimes you want to limit the values that you can assign to a variable.
+
+    This is where you would use literal types
+
+        // can be 50 or 100 for this example 
+        // to limit the values, use a literal value 
+
+        // rather than annotating with a type, 
+        // annotate with a literal (an exact/specific value)
+
+        // so it can only be set to 50 
+        let quantity: 50 | 100 = 100;
+
+        // could make the code better, rather than hardcoding 
+        // can create a custom type using a type alias 
+
+
+        type Quantity = 50 | 100;
+
+        let quantity: Quantity = 50;
+
+    literals could be strings 
+
+        type Metric = 'cm' | 'inch'; 
+
+Nullable Types
+
+    by default, TypeScript is very strict about using null and undefined values 
+    since they are common sources of bugs
+
+    function greet(name: string) {
+        console.log(name.toUpperCase());
+    }
+
+    by default, the TypeScript compiler stops you from using null or undefined values,
+
+        Argument of type 'null' is not assignable to parameter of type 'string'
+
+    in the tsconfig.json, /* Type Checking */
+
+        have a compiler option
+
+        "strictNullChecks": true
+
+            this is enabled by default as part of the "strict": true 
+            option
+
+            but can override it and turn off the feature
+
+            "strictNullChecks": false
+
+    never turn that compiler option off,
+
+
+    to have the ability to use a null value 
+
+        function greet(name: string | null | undefind) {
+            // if name is truthy
+            if (name)
+                console.log(name.toUpperCase());
+            else
+                console.log('Hola');
+        }
+
+        // can't pass null as the arg, need to use a union type
+
+        greet(null);
+
+Optional Chaining
+
+    when working with nullable objects often have to do null checks
+
+    type Customer = {
+        birthday: Date
+    }
+
+    function getCustomer(id: number): Customer | null | undefined {
+        return id === 0 ? null : { birthday: new Date() };
+    }
+
+    let customer = getCustomer(0);
+
+    // customer may be null
+    console.log(customer.birthday);
+
+
+        so could do 
+
+        if (customer)
+            console.log(customer.birthday);
+
+
+    a simpler way in TypeScript
+
+    // use the Optional property access operator
+    console.log(customer?.birthday);
+
+    $ tsc && node dist/index.js
+
+
+
+    can take this to the next level
+
+    type Customer = {
+        birthday?: Date
+    }
+
+    let customer = getCustomer(1);
+
+    // Optional property access operator
+    console.log(customer?.birthday?.getFullYear());
+
+
+    // we also have 
+    // optional element access operator 
+    // this is useful when you are dealing with arrays
+
+    // customers[0];
+    / if the array is null or undefined, would need to check 
+    // if customers != null && customers != undefined 
+            // customers[0]
+
+    this is where you can use the Optional element access operator
+
+    customers?.[0]
+
+    // Optional call
+
+        let log: any = (message: string) => console.log(message);
+            // or could be set to null
+
+        log = null;
+
+        log('a');
+        
+        this is where you can use the Optional call operator
+
+        log?.('a')
+
+The Nullish Coalscing Operator
+
+    when working with null or undefind values
+
+    sometimes you have to fall back to a default value 
+
+    ex:
+
+        let speed: number | null = null;
+
+            // if speed is truthy, use speed,
+            // otherwise use 30
+        let ride = {
+            speed: speed || 30
+        }
+
+
+        what are falsy values in JavaScript?
+
+            Falsy (undefined, null, '', false, 0)
+
+            what if 0 is a valid value for the speed variable?
+
+            so here it is better to check for null
+
+
+    let ride = {
+        speed: speed !== null ? speed : 30
+    }
+
+    in TypeScript we have a better way.
+
+    We can simplify this expression to be
+
+        // using the Nullish Coalscing Operator
+        this checks that the value is not null or undefined 
+            in which case the value will be used
+
+        let ride = {
+            speed: speed ?? 30
+        }
+
+Type Assertions
+
+    Sometimes we know more about the type of an object than TypeScript.
+
+    Ex:
+
+        // in JavaScript we have the document object 
+        // which represents a document for an HTML page loaded in a browser
+
+        // note that the signature accepts 
+        // (elementId: string): HTMLElement | null
+
+        let phone = document.getElementById('phone');
+
+        // so lets say it was found and it is an HTMLElement,
+        // which is a class defined in JavaScript which represents 
+        // any kind of HTMLElement, it is like the base or parent class 
+        // for other types of elements
+
+        // so we have more specific elements such as 
+        // HTMLInputElement 
+        // etc.
+
+        elements of this type, HTMLInputElement, have an extra property called value,
+        for reading the value input by the user 
+
+        phone.value     
+            // cannot see since the base HTMLElement type does not have that property 
+
+        this is where you would use a type assertion
+
+
+    So we will tell the TypeScript compiler,
+    I know more about the type of this object than you.
+
+
+    let phone = document.getElementById('phone') as HTMLInputElement;
+
+        // not the type of the phone variable is HTMLInputElement,
+
+
+        phone.value 
+            // we can see the value property from intelisense
+
+    in other programming languages such as C#,
+    we also have the as keyword, but it functions differently
+    in that language
+
+    in TypeScript, the as keyword doesn't perform any type conversion, 
+    this is purely for telling the compiler that we know more about the type 
+    of this object
+
+    so if the object is not an HTMLInputElement, the line won't raise any exceptions 
+
+    rather when we try to access the value property, our program is going to crash,
+    there is not type conversion taking place 
+
+
+    there is another syntax for type assertion
+
+    instead of the as keyword,
+    can prefix it with <targetType>
+
+    // note that no type conversion is taking place
+
+    let phone = <HTMLInputElement>document.getElementById('phone');
+
+The unknown Type
+
+    // represents any type of value
+    let x: any;
+
+    avoid using it!
+
+    but lets say you realy have to use the any type 
+
+    // there's a big problem with the any type
+
+    // document.move();
+    // document.fly();
+
+        no type checking being done
+
+
+    this is where you use another similar type called unknown
+    
+
+    function render(document: any) {
+
+    }
+
+    // would immediediatly see compilation errors
+    function render(document: unknown) {
+
+    }
+
+
+    the compiler doesn't know the type, therefore would know warnings 
+
+    // this is where you would use type narrowing
+
+    // use a type guard 
+
+    function render(document: unknown) {
+        if (typeof document === 'string') {
+            document.toUpperCase();
+        }
+    }
+
+
+    note that the typeof operator only works for primitive types 
+
+    if you have custom classes, have to use another operator called 
+    instanceof
+
+    function render(document: unknown) {
+        if (document instanceof WordDocument) {
+            
+        }
+    }
+
+    so note that using the unknown type is preferred to using the any type 
+
+
+The never Type
+
+    represents values that never occur,
+
+    this is not often used 
+
+    ex:
+
+        // lets say we want this function to run continously and process events
+        // perhaps it is constantly watching a message queue and waiting 
+        // for the next event
+
+
+        function processEvents() {
+            while (true) {
+                // read a message from a queue
+            }
+        }
+
+        // this function never returns due to an infinite loop
+        processEvents();
+
+        // so this line won't ever be executed
+        console.log('hello world');
+
+
+    so would annotate the return type to be never 
+    to tell the compiler that this function never returns
+
+    so the line that won't be executed would be grayed out 
+    since it won't ever be exected
+
+
+         function processEvents(): never {
+            while (true) {
+                // read a message from a queue
+            }
+        }
+
+        // this function never returns due to an infinite loop
+        processEvents();
+
+        // so this line won't ever be executed
+        console.log('hello world');
+
+
+    -
+    in tsconfig.json
+
+        in Type Checking section
+
+
+        have an compiler option called 
+
+        "allowUnreachableCode": false
+
+    now it would show a compilation error 
+
+    that's the benefit of using the never type,
+
+    another ex:
+
+        // will never return
+
+        function reject(message: string) {
+            throw new Error(message);
+        }
+
+        reject('...');
+
+        // this line will never be executed,
+        // but don't see any compiler warning
+        console.log('hello');
+
+
+    so annotate it with never 
+
+         function reject(message: string): never {
+            throw new Error(message);
+        }
+
+        reject('...');
+
+        // now will show compiler warning
+        console.log('hello');
+
+
+Summary
+
+Exercises

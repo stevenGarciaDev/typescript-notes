@@ -1,0 +1,259 @@
+Introduction
+
+Exporting and Importing
+
+Module Formats
+
+Default Exports
+
+Wildcard Imports
+
+Re-Exporting
+
+Summary
+
+/* -------
+
+Introduction
+
+    Use modules to organize your code.
+
+    - creating and using modules
+    - module formats 
+        and how to configure the TypeScript compiler to generate code for different formats
+
+Exporting and Importing
+
+    class Circle {
+        constructor(public radius: number) {}
+    }
+
+    class Square {
+        constructor(public width: number) {}
+    }
+
+    in real applications, as our code grows,
+    maintaining large files gets harder and harder
+
+    so we should split our code up into different files,
+    each serving a purpose
+
+    -
+    now move the code into
+
+    src/shapes.ts
+
+    -
+
+    Now the classes are only accessible within its current module.
+
+    You can't use them anywhere else unless you export them.
+
+    export class Circle {
+        constructor(public radius: number) {}
+    }
+
+    export class Square {
+        constructor(public width: number) {}
+    }
+
+    -
+    then in the index.ts module 
+
+
+        // importing from the module
+
+        import { Circle } from './shapes';
+
+        // could also optionally rename it 
+        // import { Circle as MyCircle } from './shapes';
+
+        // you would do this if there were another type or class in this 
+        // module with the same name
+
+        // this way you would prevent name clashes
+    
+    --
+    // on Mac, hover and
+    // cmd + .
+
+    import { Circle, Square } from './shapes';
+
+    let circle = new Circle(1);
+    console.log(circle.radius);
+
+Module Formats
+
+    In the old days, JavaScript didn't have a module system.
+
+    So various techniques and formats were used to modularize applications.
+
+    Module Formats
+
+        * AMD
+
+        * UMD
+
+        * CommonJS
+
+        * ES2015/ES6
+
+    Now starting with ES2015/ES6
+
+    Modules have become natively supported in JavaScript.
+
+    So the syntax we have for importing and exporting modules is 
+    part is ES6 modules.
+
+    so now supported in modern browsers and JavaScript runtimes out there,
+    so we don't need the other formats anymore
+
+    but just going to cover 
+
+    in tsconfig.json
+
+        in the /* Modules */ section
+
+        "module": "commonjs"
+
+        that's the module format that originally came with node
+
+    $ tsc 
+
+    now view dist/
+
+        and can see that the code looks different,
+        doesn't use the export keyword
+
+        rather see 
+
+        exports Circle = circle;
+
+        // so exports is an object that contains everything 
+        // that we are going to export from this module
+
+        rather seeing require()
+
+        the great thing is that you don't have to learn this format 
+        if you are using TypeScript
+
+        so can continue using import and export statements
+
+        and the TypeScript compiler will translate your modules 
+        into the commonJs format 
+
+        if that is what you need in the generated JavaScript code
+
+    mostly would do ES2015 as that is widely supported
+
+    $ tsc
+
+    now see the import statement and export
+
+    so depending on the module format you set in the tsconfig file,
+
+    the generated JavaScript code is going to be different
+
+Default Exports
+
+    sometimes we just want to export a single thing from a module
+
+    in those cases, it's better to use a default export
+
+    storage.ts
+
+        export default class Store {}
+
+        // Implementation detail
+
+        class Compressor {}
+
+        class Encryptor {}
+
+    --
+
+    import Store, { Format } from './storage.ts';
+
+    -
+
+    now default exports can also coexists with named exports
+
+    export enum Format {
+        Raw,
+        Compressed
+    }
+
+Wildcard Imports
+
+    sometimes we need quite a few objects from a module
+
+    so importing them one by one can be a bit of a hassle
+
+    import { Cicle, Square } from './shapes';
+
+    // if importing 10 classes or more, 
+    // can use a wildcard import to simplify our code
+
+    // putting everything inside a bucket or a container, called Shapes
+
+    import * as Shapes from './shapes';
+
+Re-Exporting
+
+    we can have a single module combine the exports of different modules
+
+    src/shapes/shapes.ts
+
+        so in shapes.ts
+
+        currently have
+
+            export class Circle {
+                constructor(public radius: number) {}
+            }
+
+            export class Square {
+                constructor(public width: number) {}
+            }
+
+    as these classes get larger and larger,
+    this module becomes harder to maintain
+
+    in that case, it's better to split this module
+    into a few different modules
+
+    src/shapes/index.ts
+
+        import { Circle } from './Circle';
+        import { Square } from './Square';
+
+        export { Circle, Square };
+
+
+    then can import 
+
+    import { Circle, Square } from './shapes/index';
+
+    // simplify to be... (sometimes referred as the shapes package)
+    import { Circle, Square } from './shapes';
+
+    -
+
+    tsconfig.json
+
+        /* Modules */
+
+        // default module resolution is set to classic for backwards compatibility
+        // so it's a good practice to uncomment this line and set the module resolution to "node"
+        /// as opposed to "classic"
+
+        "moduleResolution": "node"
+
+    can simplify to import/export in one go
+
+        export { Circle } from './Circle';
+        export { Square } from './Square';
+
+    this is what we call re-exporting
+
+Summary

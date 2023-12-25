@@ -1,0 +1,351 @@
+Introduction
+
+What are Decorators
+
+Class Decorators
+
+Parameterized Decorators
+
+Method Decorators
+
+Accessor Decorators - Title
+
+Property Decorators
+
+Parameter Decorators
+
+Summary
+
+Exercises
+
+/* ---------
+
+Introduction
+
+    Allow you to change or enhance your classes.
+
+What are Decorators
+
+    Decorators are attributes that we apply to our classes and their members.
+
+    With this we can change how they behave.
+
+    They are frequently used in Angular and Vue application.
+
+    // by applying the component decorator, we can convert this class to a component for a web application
+    // note that TypeScript doesn't have the Component decorator defined, it is used in Angular
+
+    @Component
+    class ProfileComponent {
+
+    }
+
+    Angular and Vue come with built in decorators such as Component, Pipe, etc.
+
+    Under the hood,
+    this decorator is just a function that gets called by the JavaScript runtime
+
+    so the JavaScript runtime or the JavaScript engine that executes our code 
+    is going to call that function and pass our class to it
+
+    in that function, we have a chance to modify this class
+
+    so we can add new properties, new methods,
+    or can change the implementation of existing methods
+
+    first have to enable a special compiler option as decorators are an experimental feature
+    and their standards and implementation may change in the future
+
+    tsconfig.json
+
+        in /* Language and Environment */ section
+
+        have a setting called
+
+        "experimentalDecorators": true
+    
+Class Decorators
+
+    A decorator is just a function that gets called by the JavaScript runtime.
+
+
+        // so when you specify the type to be a Function,
+        // the runtime will assume that we are going to apply
+        // this on a class
+    
+        function Component(constructor: Function) {
+
+            // within this function, we have a chance to modify or enhance our class
+            // so we can add new properties and methods,
+            // we can change existing methods
+            // we could even delete properties
+
+            console.log('Component decorator called');
+
+            // every object in JavaScript has a prototype which it inherits various properties and methods
+
+            // we can use it to add new properties and methods
+
+            constructor.prototype.uniqueId = Date.now();
+
+            constructor.prototype.insertInDom = () => {
+                console.log('Inserting the component in the DOM');
+            }
+
+        }
+
+        class Component {
+            insertInDOM() { }
+        }
+
+        class ProfileComponent extends Component {
+
+        }
+
+    -
+
+    so in the transpiled .js file
+
+    "use strict";
+
+    var __decorate = (this && this.__decorate) 
+
+
+Parameterized Decorators
+
+    sometimes we need to pass arguments to our decorators
+
+    type ComponentOptions = {
+        selector: string;
+    }
+
+    // Decorator factory
+    function Component(options: ComponentOptions) {
+        return (constructor: Function) => {
+            console.log('Component decorator called');
+            constructor.prototype.options = options;
+            constructor.prototype.uniqueId = Date.now();
+            constructor.prototype.insertInDOM = () => {
+                console.log('Inserting the component in the DOM');
+            }
+        }
+    }
+
+    function Pipe(constructor: Function) {
+        console.log('Pipe decorator called');
+        constructor.prototype.pipe = true;
+    }
+
+    @Component({ selector: '#my-profile' })
+    @Pipe
+    class ProfileComponent {
+
+    }
+
+    so decorators are applied in the reverse order
+
+        $ tsc && node dist/index.js
+
+            results in:
+
+            Pipe decorator called
+            Component decorator called
+
+    so the Pipe decorator is called, this will enhance our component,
+    then the Component decorator
+
+Method Decorators
+
+    property descriptors in JavaScript series
+    every property in an object has a descriptor object 
+    that describes that property
+
+    google: typescript decorators
+
+    // to apply the decorator on a method,
+    // we need three parameters
+    // param 1: -> the object that owns the target method (data annotation of any)
+    // param 2: -> method name
+    // param 3: -> descriptor object for the target method
+    function Log(target: any, methodName: string, descriptor: PropertyDescriptor) {
+
+        // can completely replace this method with an entirely new method
+        // don't want to do this
+        descriptor.value = function() {
+            console.log('New Implementation');
+        }
+
+        // want to enhance an existing method
+        // so you want to do something before or after that method
+
+        const original = descriptor.value as Function;
+
+        descriptor.value = function(message: string) {
+            console.log('Before');
+
+            // call the original method
+            // need a reference to the original method
+            original.call(this, message);
+
+            console.log('After');
+        }
+    }
+
+    class Person {
+
+        @Log
+        say(message: string) {
+            console.log('Person says ' + message);
+        }
+    }
+
+    --
+
+    let person = new Person();
+    person.say('Hello');
+
+    -
+
+    need to turn off a special compiler option,
+    because here we have a couple of unused parameters 
+    and TypeScript compiler is going to complain about them
+
+    tsconfig.json
+
+        in the Type Checking section
+
+        compiler option called 
+
+        "noUnusedParameters": true
+
+    $ tsc && node dist/index.js
+
+    so with that decorator we have enhanced our method
+
+    but there is a problem with the implementation,
+    we can only apply this decorator on methods 
+    with the specific signature
+    of one parameter of type string
+
+    not very flexible
+
+    so what can we do here?
+
+        so rather than (message: string)
+        replace with
+        (message: any)
+
+        then rename message to be something more generic,
+        such as args
+
+        and using the rest operator, we allow this function to take varying number of parameters
+
+    // rest operator, note that we use the function rather than arrow function, so 
+    // that we can use the this keyword
+    function(...args: any) {
+        ....
+
+        // spread all the arguments
+        original.call(this, ...args);
+
+        ....
+    }
+
+Accessor Decorators - Title
+
+    getters and setters
+
+
+    function Capitalize(target: any, methodName: string, descriptor: PropertyDescriptor) {
+        const original = descriptor.get;
+        descriptor.get = function() {
+            const result = original?.call(this);
+            return (typeof result === 'string') ? result.toUpperCase() : result;
+        }
+    }
+
+    class Person {
+        constructor(public firstname: string, public lastName: string) {}
+
+        @Capitalize
+        get fullName() {
+            return `${this.firstName} ${this.lastName}`;
+        }
+    }
+
+    let person = new Person('steven', 'garcia');
+
+    console.log(person.fullName);
+
+    $ tsc && node dist/index.js
+
+Property Decorators
+
+    Let's define a decorator for enhancing a property.
+
+    function MinLength(length: number) {
+        return (target: any, propertyName: string) => {
+            let value: string;
+
+            const descriptor: PropertyDescriptor = {
+
+                get() { return value; }
+
+                set(newValue: string) {
+
+                    // data validation object
+                    if (newValue.length < length) 
+                        throw new Error(`${propertyName} should be at least ${length} characters long.`);
+                
+                    value = newValue;
+                }
+            };
+
+            Object.defineProperty(target, propertyName, descriptor);
+        }
+    }
+
+    class User {
+        @MinLength(4)
+        password: string;
+
+        constructor(password: sring) {
+            this.password = password;
+        }
+    }
+
+    let user = new User('1234');
+    console.log(user.password);
+
+Parameter Decorators
+
+    not something you use that often,
+    but if you are designing a framework for other people to use
+    then might want to know how this parameter decorators work
+
+    type WatchedParameter = {
+        methodName: string;
+        parameterIndex: number;
+    }
+
+    const watchedParameters: WatchedParameter[] = [];
+
+    function Watch(target: any, methodName: string, parameterIndex: number) {
+        // we simply store some metadata about the parameter
+        // so that later our framework can do something about them
+
+        watchedParameters.push({
+            methodName,
+            parameterIndex
+        });
+    }
+
+    class Vehicle {
+        move(@Watch speed: number) {
+            
+        }
+    }
+
+Summary
+
+Exercises

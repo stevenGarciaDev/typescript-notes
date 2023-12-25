@@ -1,0 +1,401 @@
+Introduction
+
+Creating a React App with TypeScript
+
+Adding Bootstrap
+
+Creating a Component - Title
+
+Using the State Hook
+
+Calling the Backend
+
+Using the Effect Hook
+
+Handling Events
+
+Building a Form
+
+Handling Form Submission
+
+Additional Reading
+
+/* --------
+
+Introduction
+
+    a simple to do app that shows the essential concepts
+    to see TypeScript in the real world
+
+Creating a React App with TypeScript
+
+    $ npx create-react-app reminders-app --template typescript
+
+        this will create a React application configured 
+        to use TypeScript
+
+    $ cd reminders-app
+
+    $ code .
+
+
+    it will have the tsconfig.json 
+    and src/
+
+    Instead of jsx have tsx files.
+
+Adding Bootstrap
+
+    $ npm i bootstrap
+
+    then in src/
+
+        index.tsx
+
+        before the index.css 
+
+        import 'bootstrap/dist/css/bootstrap.css';
+
+    in App.css
+
+        delete all the styles 
+        then add 
+
+        body {
+            padding: 20px;
+        }
+
+    $ npm start
+
+Creating a Component - Title
+
+    src/components/ReminderList.tsx
+
+
+    src/models/
+
+             // put this in someplace central 
+
+        Reminder.ts
+
+            export default interface Reminder {
+                id: number;
+                title: string;
+            }
+
+    extension Reactjs code snippets
+
+    
+    rsf 
+        // react stateless function
+        // then enter
+
+
+    import React from 'react';
+
+    interface ReminderListProps {
+        items: Reminder[]
+    }
+
+    // or could destructure and just do { items } rather than props
+    function ReminderList({ items }: ReminderListProps) {
+
+        return (
+            <div>
+                <ul>
+                    {item.map(item => <li key={item.id}>{item.title}</li>)}
+                </ul>
+            </div>
+        );
+    }
+
+    export default ReminderList;
+
+
+    ---
+
+    in App.tsx
+
+        const reminders: Reminders[] = [
+            { id: 1, title: 'Reminder 1' }
+        ]
+
+        <div>
+            <ReminderList items={reminders} />
+        </div>
+
+Using the State Hook
+
+    State management using the state hook.
+
+        // useState<T> is generic in TypeScript
+
+    if we don't supply an argument for a function then by default 
+    undefined will be passed 
+
+    function App() {
+        // so could be a reminder array or undefined 
+        const [reminders, setReminders] = useState<Reminders[]>();
+
+        return (
+            <div className="App">
+                <ReminderList items={reminders} />
+            </div>
+        );
+    }    
+
+    --
+
+     function App() {
+        const [reminders, setReminders] = useState<Reminders[]>([]);
+
+        // don't have to always explicitly supply the generic type argument
+        const [loading, setLoading] = useState(true);
+
+        return (
+            <div className="App">
+                <ReminderList items={reminders} />
+            </div>
+        );
+    }   
+
+Calling the Backend
+
+    https://jsonplaceholder.typicode.com
+
+    a fake backend service
+
+    components should only be responsible for rendering the UI,
+    nothing else
+
+    other concerns like calling the API or storing something in the local storage 
+    should be implemented in other classes
+
+    src/
+        services/
+
+            reminder.ts
+
+    use axios for the backend, helpful library 
+    though not the only way 
+
+    $ npm i axios
+
+    import axios from 'axios';
+    // it comes with type definition files
+
+    class ReminderService {
+        // param is a AxiosRequestConfig<>
+        // ctrl + space for intellisence
+
+        http: axios.create({
+            baseURL: 'http://jsonplaceholder.typicode.com/',
+        });
+
+        async getReminders() {
+            const response = this.http.get<Reminder[]>('/todos');
+            return response.data;
+        }
+
+        async addReminder(title: string) {
+            const response = await this.http.post<Reminder>('/todos', { title });
+            return response.data;
+        }
+
+        async removeReminder(id: nubmer) {
+            const response = await this.http.delete(`/todos/${id}`);
+            return response.data;
+        }
+    }
+
+    // export an instance of this class,
+    // so that the consumers of this class,
+    // don't have to new up the service 
+    export default new ReminderService();
+
+Using the Effect Hook
+
+    in App.tsx
+
+    impot reminderService from './services/reminder';
+
+    function App() {
+        const [reminders, setReminders] = useState<Reminders[]>([]);
+
+        // execute only once
+
+        useEffect(() => {
+            loadReminders();
+        }, []);
+
+         // function expression
+        const loadReminders = async () => {
+            await reminderService.getReminders();
+            setReminders(reminders);
+        }
+ 
+
+        ...
+    }
+
+Handling Events
+
+    adding a button for deleting reminders 
+
+    in ReminderList 
+
+        function ReminderList({ items }: ReminderListProps) {
+
+            return (
+                <div>
+                    <ul>
+                        {item.map(item => <li key={item.id}>
+                        {item.title}
+                        
+                            <button className="btn btn-outline-danger mx-2 rounded-pill">Delete</button>
+                        </li>)}
+                    </ul>
+                </div>
+            );
+        }
+
+    
+    ReminderList is only resposible for displaying the view 
+
+    -
+    in App.tsx the class that controls that state for this use case 
+
+
+        const removeReminder = (id: number) => {
+            console.log(id);
+            setReminders(reminders.filter(r => r.id != id));
+        }
+
+        ..
+
+        <ReminderList items={reminders} onRemoveReminder={removeReminder} />
+
+    then back in ReminderList
+    
+        interface ReminderListProps {
+            items: Reminder[],
+            onRemoveReminder: (id: number) => void;
+        }
+
+        function ReminderList({ items }: ReminderListProps) {
+
+            return (
+                <div>
+                    <ul>
+                        {item.map(item => <li key={item.id}>
+                        {item.title}
+                        
+                            <button onClick={() => onRemoveReminder(item.id)} className="btn btn-outline-danger mx-2 rounded-pill">Delete</button>
+                        </li>)}
+                    </ul>
+                </div>
+            );
+        }
+
+Building a Form
+
+    NewReminder.tsx
+
+        rsf 
+
+
+    also note that we could annotate the return value of our function components
+    with JSX.Element 
+
+        : JSX.Element 
+
+        so if we don't return a JSX element, the TypeScript compiler will ensure 
+        that you return a proper JSX element from your function components
+
+
+    ---
+
+    import React from 'react';
+
+
+
+    function NewReminder() {
+        // destructuring
+
+        const [title, setTitle] = useState('');
+
+        return (
+            <form>
+                // label+input.form-control+button.btn.btn-primary.rounded-pill 
+                // the tab 
+
+                <label htmlFor="title"></label>
+                <input id="title" value={title} onChange={e => setTitle(e.target.value)} type="text" className="form-control" />
+                <button type="submit" className="btn btn-primary my-3 rounded-pill">Add Reminder</button>
+            </form>
+        );
+    }
+
+
+    --
+
+    in App.tsx
+
+        return (
+            <div className="App">
+                <NewReminder />
+                <ReminderList items={reminders} />
+            </div>
+        );
+
+
+Handling Form Submission
+
+    in App.tsx
+
+
+        // define a function that handles adding a reminder and pass that function 
+        // as a callback to the child function
+
+        const addReminder = async (title: string) => {
+            const newReminder = await reminderService.addReminder(title);
+            setReminders([newReminder, ...reminders]);
+        }
+
+        return (
+            <div className="App">
+                <NewReminder onAddReminder={addReminder} />
+                <ReminderList items={reminders} />
+            </div>
+        );
+
+    -----
+
+    interface NewReminderProps {
+        onAddReminder: (title: string) => void;
+    }
+
+    // note that you could destructure
+
+    function NewReminder(props: NewReminderProps) {
+        const [title, setTitle] = useState('');
+
+         // FormEvent interface
+        const submitForm = (e: React.FormEvent) => {
+            e.preventDefault();
+            if (!title) return;
+            props.onAddReminder(title);
+            setTitle('');
+        }
+
+        return (
+            <form onSubmit={submitForm}>
+                <label htmlFor="title"></label>
+                <input id="title" value={title} onChange={e => setTitle(e.target.value)} type="text" className="form-control" />
+                <button type="submit" className="btn btn-primary my-3 rounded-pill">Add Reminder</button>
+            </form>
+        );
+    }
+
+Additional Reading
+

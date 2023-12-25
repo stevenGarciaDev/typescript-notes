@@ -1,0 +1,242 @@
+Introduction
+
+Executing  TypeScript Code with Node
+
+Setting up an Express Project
+
+Creating a Basic Route
+
+Creating a Router
+
+Parsing Request Bodies
+
+Building an API
+
+/* -----
+
+Introduction
+
+    Build a simple API using Node, Express, and TypeScript.
+
+Executing  TypeScript Code with Node
+
+    $ mkdir reminders-api && cd reminders-api
+
+    index.ts
+
+    $ node index.ts
+
+        Node is an execution engine for JavaScript code.
+
+        It cannot execute TypeScript.
+
+        So here we have two options
+
+        - use the TypeScript compiler to transpile our code to JavaScript
+        and then run it with node
+
+            $ tsc index.ts
+            $ ls
+                // will see index.js
+            $ node index.js
+
+        - the other option is to use a node package called ts-node
+
+            $ npm init -y
+                // to generate a basic package.json file
+            
+            $ npm i -D ts-node
+                // install it as a developer dependency
+
+            then in package.json
+
+            in the scripts section,
+
+            "scripts": {
+                "start": "ts-node index.ts"
+            }
+
+            so this package, ts-node, combines the two steps into one step
+
+            so we don't have to explicitly compile our code and then running it,
+            we can simply run it using ts-node
+
+            $ npm start
+
+            the other option
+            is to install ts-node globally so that we can run it anywhere 
+            on this machine
+
+            $ sudo npm i -g ts-node
+
+            $ ts-node index.ts
+            
+Setting up an Express Project
+
+    There are a number of packages that you need to install.
+
+    $ npm i express
+
+    $ npm i -D typescript @types/nodes @types/express
+
+        // also install the type declaration files for node and express
+
+    $ tsc --init
+
+        import express from 'express';
+
+        const app = express();
+
+            // can see all the properties and methods, as well as their types
+
+        app.listen(8000, () => console.log('Server started'));
+
+    so to run our application could use ts-node, the problem is that whenever we make any changes
+    we have to stop the server and restart it
+
+    to solve that problem, we use nodemon
+
+    nodemon watches your files and every time you make a change, it will restart our server
+
+    $ npm i -D nodemon
+
+        // the latest version of nodemon also supports ts-node
+
+    package.json
+
+        "scripts": {
+            "start": "nodemon index.ts"
+        }
+
+    nodemon will use ts-node under the hood to compile and run index.ts
+
+    $ npm start
+
+        server starts
+
+Creating a Basic Route
+
+    before calling app.listen()
+
+    do
+
+
+    // pass the route handler as the callback function (2nd argument)
+    app .get('/', (req, res) => {
+        res.send('Hello world');
+    });
+
+    // view all the properties for req and res
+
+    localhost:8000
+
+Creating a Router
+
+    localhost:8000/reminders
+
+    routers/
+        reminders.ts
+
+        import { Router } from 'express';
+
+        const router = Router();
+
+        router.get('/', (req, res) => {
+            res.send('List of remainders');
+        });
+
+        export default router;
+
+    in index.ts
+
+        import express from 'express';
+        import remindersRouter from './routers/reminders';
+
+        const app = express();
+
+        app.use('/reminders', remindersRouter);
+
+        app.listen(8000, () => console.log('Server started'));
+
+Parsing Request Bodies
+
+    to handle POST request
+
+    reminders.ts
+
+        import { Router } from 'express';
+
+        const router = Router();
+
+        router.get('/', (req, res) => {
+            res.send('List of remainders');
+        });
+
+        // Need an interface
+        // an object that the client sends to the server
+        // so put this interface in a dtos/ directory
+        // name it create-reminder.ts
+        interface CreateReminderDto {
+            title: string
+        }
+
+        reminders.post('/', (req, res) => {
+            // use type assertion
+            const { title } = req.body as CreateReminderDto;
+
+            // res.json(title);
+        });
+
+        export default router;
+
+    -
+    then use Postman to send a POST request 
+
+    express doesn't parse incoming request bodies
+
+    to solve this problem, you have to install a special middleware
+
+    so in index.ts
+
+
+        const app = express();
+
+        // in the past we use body parser, but in the latest version of Express, body parser is included
+        // so we don't need to install it separately
+        app.use(express.json());
+
+Building an API
+
+    routers/reminders.ts
+
+        router.post('/', (req, res) => {
+            const { title } = req.body as CreateReminderDto;
+            const reminder = { id: Date.now(), title, isComplete: false };
+
+            res.json()
+        });
+
+        // better to encapsulate these details inside of a reminder class
+        // this way each module will be responsible for only a single thing
+
+    // models/reminder.ts
+        export default class Reminder {
+            id: number;
+            isComplete: boolean;
+
+            constructor(public title: string) {
+                this.id = Date.now();
+                this.isComplete = false;
+            }
+        }
+
+    then back in the router
+
+        router.post('/', (req, res) => {
+            const { title } = req.body as CreateReminderDto;
+            const reminder = new Reminder(title);
+
+            // persist in the database
+
+            res.status(201).json(reminder);
+        });

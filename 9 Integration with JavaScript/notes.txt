@@ -1,0 +1,251 @@
+Introduction
+
+Introducing JS Code in TS Projects
+
+Type Checking JS Code
+
+Describing Types using JSDoc
+
+Creating Declaration Files
+
+Using Definitely Typed Declaration Files
+
+Summary
+
+/* -----
+
+Introduction
+
+Introducing JS Code in TS Projects
+
+    Not always possible to always code in TypeScript, as you may have an existing JavaScript project
+    and you want to introduce TypeScript later on.
+
+    Or you just want to work with some existing JavaScript code.
+
+    Add a js file 
+
+        Since it is vanilla JS, we can't use TypeScript features.
+
+    src/tax.js
+
+        export function calculateTax(income) {
+            return income * .3;
+        }
+
+
+    Then in index.ts
+
+        // Would get a compilation error as JavaScript is not included in the compilation process by default.
+        // So the TypeScript compiler can't see the tax module.
+
+        // To solve this problem, have to go to tsconfig.json
+        // in the section called /* JavaScript Support */
+        // have to turn on the compiler option called, "allowJs": true
+
+        import { calculateTax } from './tax';
+
+        let tax = calculateTax(1000);
+        console.log(`tax: ${tax}`);
+
+
+    then compile and run the program
+
+    $ tsc && node dist/index.js
+
+
+    ----
+
+    in tsconfig.json 
+        for this 
+
+        /* Modules */
+        "module": "CommonJS"
+        
+
+Type Checking JS Code
+
+    When using JavaScript code by default, we don't get any type checking.
+
+    You won't know of the issues until runtime.
+
+    You have to compile and run the program to see the result.
+
+    To solve this issue,
+    in tsconfig.json 
+
+    in /* JavaScript Support */ section,
+    we have another compiler option called 
+    "checkJs": true 
+
+        Once turned on, we get some basic type checking.
+
+        It's not as comprehensive as what we get in a TypeScript class
+        but it is better than nothing.
+
+    Now recompile the code 
+    and will display the compilation error.
+
+    --
+
+    have 2 options here 
+
+        1) describe the type information to the TypeScript compiler
+
+
+        but lets say we are getting a ton of errors in this file
+        and we want to tell the compiler to stay silent
+
+    -
+
+    back in tax.js
+
+    Add a special comment, @ts-nocheck 
+    we add this once on top of a tfile that we don't want 
+    the TypeScript compiler to check
+
+
+     src/tax.js
+
+        // @ts-nocheck
+        export function calculateTax(income) {
+            return income * .3;
+        }
+
+    -
+    note that if we don't supply an argument, undefined will be passed to the parameter
+
+Describing Types using JSDoc
+
+    One way to describe type information for our JavaScript code is by using JSDoc.
+
+    This is a special type of comment we can add to our code.
+
+
+    in src/tax.js
+
+        /**
+        * Calculates income tax.
+        * @param {number} income - Net salary after expenses.
+        * @returns {number}
+        */
+        export function calculateTax(income) {
+            return income * .3;
+        } 
+    
+
+    So when running will show a compilation error if you don't pass the argument in index.ts
+
+    --
+
+    So by using JSDoc, we can provide type information to the TypeScript compiler.
+
+    But we can also explain our code, by providing a description for the function.
+
+    And if you hover over the function, in VSCode, you can see the description provided in the JSDoc.
+
+    We have another way to provide type information to the TypeScript compiler, in the next video.
+
+Creating Declaration Files
+
+    A declaration or a type definition file.
+
+    This is useful if you don't want to modify your JavaScript code and add these 
+    JSDoc comments.
+
+    -
+
+    in src/tax.d.ts
+
+        The name of the file should be the same as the corresponding JavaScript file.
+
+        But the extension should be .d.ts
+        // d for declaration
+
+
+    This is the same as a header file in the C programming language.
+
+    So in that file, you define all the features of the target module.
+
+    --
+
+    // so all we do is declare the function signature 
+    // the actual implementation is somewhere else (in the target module)
+
+    and once we export, then the TypeScript compiler will perform type checking of the target module 
+
+    in tax.d.ts
+
+        export declare function calculateTax(income: number): number;
+
+    -
+
+    just remember,
+    when using this approach, youn should describe all the features of the target module.
+
+    Anything you don't describe will be invisible to the compiler.
+
+    For example, in the target module 
+    if there was a function that was not declared in the declaration file
+    then it will be invisible to the TypeScript compiler.
+
+Using Definitely Typed Declaration Files
+
+    Now consider using third party JavaScript libraries in our TypeScript projects.
+
+    Consider the lodash library, which is very popular utility library.
+
+    $ npm i lodash
+
+    in index.ts
+
+        // Get a compilation error when importing saying 
+        // 'Could not find a declaration file for module lodash'
+
+        /*
+        We see this error since lodash is a pure JavaScript library and does not have JSDoc comments 
+        or declaration files.
+
+        This is where we use a very popular GitHub repository called, DefinitelyTyped.
+
+        In this repository, we can find declaration files for all the popular JavaScript libraries.
+
+        */
+
+        import * as _ from 'lodash';
+
+
+    ---
+        // @types/{herePutTheNameOfTheTargetPackage}
+
+        --save-dev 
+        as this is only for build time/compile time
+
+        or can use -D (as a shortcut)
+
+
+    $ npm i --save-dev @types/lodash
+
+    --
+
+    now will have type annotation with the lodash library
+
+
+    With TypeScript getting more popular everyday, many TypeScript libraries
+    come with declaration files.
+
+    // so we don't need to install their declaration files separately from the definitely typed repository   
+
+    --
+
+    another example 
+
+    $ npm i chalk
+
+        in node_modules/chalk/src/
+
+            have index.js and index.d.ts
+
+            so the declaration file is included with that module  
+
+Summary
